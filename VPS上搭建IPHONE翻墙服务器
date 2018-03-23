@@ -1,0 +1,15 @@
+1. 购买VPS, 教程购买的这里[搬瓦工](https://bwh1.net/index.php) （其它也可以）主要需要使用墙外的服务器，防止被禁！
+2. 购买后，在机器上安装Centos 7，获取root权限。
+3. 安装完成后，远程登录机器，命令：`$ ssh -p 端口号 root@vpsIP地址` 例如：`ssh -p 8080 root@127.0.0.1`
+4. 防火墙配置(如果上述ssh登录不了，需要考虑可能是防火墙问题，进行如下步骤)
+  4.1 首先清除防火墙配置`$ iptables -F`
+  4.2 安装firewalld, 执行命令：`$ yum install firewalld firewall-config`安装
+  4.3 启动firewalld, 执行命令：`$ systemctl start firewalld`
+  4.4 修改ssh端口，命令：`$ vi /usr/lib/firewalld/services/ssh.xml`, 出现如下内容
+    ```
+    <?xml version="1.0" encoding="utf-8"?><service>
+      <short>SSH</short>
+      <description>Secure Shell (SSH) is a protocol for logging into and executing commands on remote machines. It provides secure encrypted communications. If you plan on accessing your machine remotely via SSH over a firewalled interface， enable this option. You need the openssh-server package installed for this option to be useful.</description>
+      <port protocol="tcp" port="[ssh端口]"/>
+    </service>
+    ```
