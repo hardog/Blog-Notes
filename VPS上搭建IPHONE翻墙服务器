@@ -129,5 +129,12 @@
   `$ firewall-cmd --permanent --add-masquerade`
   `$ firewall-cmd --reload`
 11. 手机建立VPN连接
-  【设置】=> 【VPN】=>【添加VPN配置】=> 类型选择IPsec，描述随便
+  【设置】=> 【VPN】=>【添加VPN配置】=> 
+      [类型]选择IPsec，
+      [描述]随便填, 
+      [服务器]填服务器地址，
+      [账户]填上述自定义账户名, 
+      [密码]填服务器密码，
+      [使用证书]选上述安装过的证书
+    
 
