@@ -20,5 +20,42 @@
   5.1 安装ss, 分别执行命令：`$ yum install m2crypto python-setuptools`，`$ easy_install pip`, `$ pip install shadowsocks`
   5.2 创建，ss配置文件, 命令：`$ vi  /etc/shadowsocks.json`(路径可选, 内容如下)
     ```
-    
+    {
+      "server":"0.0.0.0"，// 你服务器ip地址
+      "server_port":8388，// ss服务的端口
+      "local_address": "127.0.0.1"，// 保持默认就好
+      "local_port":1080，// 保持默认就好
+      "password":"mypassword"，// 登录当前服务器的密码
+      "timeout":300，
+      "method":"aes-256-cfb"，// 保持默认就好
+      "fast_open": false // 保持默认就好
+    }
     ```
+    5.3 如果需要修改ss服务的端口，可修改文件：`$ vi /usr/lib/firewalld/services/ss.xml`, 内容如下：
+    ```
+    <?xml version="1.0" encoding="utf-8"?>
+    <service>
+      <short>SS</short>
+      <description>Shadowsocks port
+      </description>
+      <port protocol="tcp" port="[自定义ss端口号]"/>
+    </service>
+    ```
+    5.4 保存退出后，分别执行命令:`$ firewall-cmd --permanent --add-service=ss`, `$ firewall-cmd --reload`
+    5.5 启动ss服务，执行命令：`$ ssserver -c /etc/shadowsocks.json`, 保持服务后台运行命令：`$ nohup ssserver -c /etc/shadowsocks.json &`, 回车即可
+ 6. 为了实现在IOS手机上连上VPN, 安装Strongswan，手动编译安装
+   6.1 下载，`$ wget http://download.strongswan.org/strongswan.tar.gz && tar zxvf strongswan*`
+   6.2 进入目录, `$ cd strongswan*`, 安装依赖，`$ yum install -y make gcc gmp-devel openssl openssl-devel`
+   6.3 生成配置，如果选择搬瓦工OpenVZ类型VPS, 请使用如下命令：
+    ```
+      $ ./configure --sysconfdir=/etc --disable-sql --disable-mysql --disable-ldap --enable-dhcp --enable-eap-identity --enable-eap-mschapv2 --enable-md4 --enable-xauth-eap --enable-eap-peap --enable-eap-md5 --enable-openssl --enable-shared --enable-unity --enable-eap-tls   --enable-eap-ttls --enable-eap-tnc --enable-eap-dynamic --enable-addrblock --enable-radattr --enable-nat-transport --enable-kernel-netlink --enable-kernel-libipsec
+    ```
+    如果选择其它类型VPS, 使用如下命令:
+     ```
+      ./configure --sysconfdir=/etc --disable-sql --disable-mysql --disable-ldap --enable-dhcp --enable-eap-identity --enable-eap-mschapv2 --enable-md4 --enable-xauth-eap --enable-eap-peap --enable-eap-md5 --enable-openssl --enable-shared --enable-unity --enable-eap-tls   --enable-eap-ttls --enable-eap-tnc --enable-eap-dynamic --enable-addrblock --enable-radattr --enable-nat-transport --enable-kernel-netlink
+     ```
+    6.4 编译源代码安装，`$ make && sudo make install`, 安装完成无错误后可继续
+    
+    
+    
+    
