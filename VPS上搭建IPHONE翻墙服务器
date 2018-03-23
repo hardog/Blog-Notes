@@ -55,7 +55,79 @@
       ./configure --sysconfdir=/etc --disable-sql --disable-mysql --disable-ldap --enable-dhcp --enable-eap-identity --enable-eap-mschapv2 --enable-md4 --enable-xauth-eap --enable-eap-peap --enable-eap-md5 --enable-openssl --enable-shared --enable-unity --enable-eap-tls   --enable-eap-ttls --enable-eap-tnc --enable-eap-dynamic --enable-addrblock --enable-radattr --enable-nat-transport --enable-kernel-netlink
      ```
     6.4 编译源代码安装，`$ make && sudo make install`, 安装完成无错误后可继续
-    
-    
-    
-    
+    6.5 如果未启动，可使用命令：`$ systemctl enable strongswan`, `$ systemctl start strongswan`
+7. 生成证书
+    7.1 建立临时目录，`$ mkdir ~/ipsec_cert && cd ~/ipsec_cert`
+    7.2 下载服务器证书脚本`$ wget https://gist.githubusercontent.com/songchenwen/14c1c663ea65d5d4a28b/raw/cef8d8bafe6168388b105f780c442412e6f8ede7/server_key.sh`
+    7.3 生成服务器证书，`$ sh server_key.sh [当前服务器IP地址]`
+    7.4 下载客户端证书脚本，`$ wget https://gist.githubusercontent.com/songchenwen/14c1c663ea65d5d4a28b/raw/54843ae2e5e6d1159134cd9a90a08c31ff5a253d/client_key.sh`
+    7.5 生成客户端证书，`$ sh client_key.sh [你的用户名（自己定）] [你的Email地址（自己定）]`
+    7.6 复制证书到`/etc/ipsec.d/`目录，执行如下命令：
+       ```
+       $ sudo cp cacerts/strongswanCert.pem /etc/ipsec.d/cacerts/strongswanCert.pem 
+       $ sudo cp certs/vpnHostCert.pem /etc/ipsec.d/certs/vpnHostCert.pem
+       $ sudo cp private/vpnHostKey.pem /etc/ipsec.d/private/vpnHostKey.pem
+       ```
+    7.7 同步客户端证书到本地，可以使用如下命令：
+      ```
+        $ scp -P ssh端口 root@服务器ip:~/ipsec_cert/[上面自定义的用户名].p12 ~/
+        $ scp -P ssh端口 root@服务器ip:~/ipsec_cert/cacerts/strongswanCert.pem ~/
+      ```
+      上述两个文件需要在手机上安装，后续连VPN时认证使用！
+8. 配置strongswan,
+  8.1 配置strongswan, 执行命令`$ vi /etc/ipsec.conf`
+  8.2 使用如下内容覆盖文件内容：
+      ```
+        config setup
+            ### strictcrlpolicy=yes
+            ### uniqueids = replace
+            ### charondebug="cfg 2, dmn 2, ike 2, net 0" ### 要看Log时，取消注释本行
+        conn %default
+            keyexchange=ikev1
+            dpdaction=hold
+            dpddelay=600s
+            dpdtimeout=5s
+            lifetime=24h
+            ikelifetime=240h
+            rekey=no
+            left=[当前服务器IP地址] ### 与生成证书时相同 
+            leftsubnet=0.0.0.0/0
+            leftcert=vpnHostCert.pem
+            leftsendcert=always
+            right=%any
+            rightdns=8.8.8.8
+            rightsourceip=10.0.0.0/8
+        conn CiscoIPSec
+            rightauth=pubkey
+            rightauth2=xauth
+            auto=add
+      ```
+  8.3 创建手机连VPN时的用户名密码，执行命令`$ vi /etc/ipsec.secrets`
+  8.4 将以下内容覆盖文件内容：
+    ```
+      ### 验证用户所需的信息
+      ### 用户名 : EAP "密码"
+      : RSA vpnHostKey.pem
+      [连VPN的用户名（上述定义的用户名）] : EAP "[当前连VPN用户的密码]"
+    ```
+9. 用firewalld 开放 4500、500 端口和 esp 协议
+  9.1 执行命令，编辑文件`$ vi /usr/lib/firewalld/services/ipsec.xml `
+  9.2 保证文件内容如下即可：
+    ```
+      <?xml version="1.0" encoding="utf-8"?>
+      <service>
+        <short>IPsec</short>
+        <description>Internet Protocol Security (IPsec) incorporates security for network transmissions directly into the Internet Protocol (IP). IPsec provides methods for both encrypting data and authentication for the host or network it sends to. If you plan to use a vpnc server or FreeS/WAN, do not disable this option.</description>
+        <port protocol="ah" port=""/>
+        <port protocol="esp" port=""/>
+        <port protocol="udp" port="500"/>
+        <port protocol="udp" port="4500"/>
+      </service>
+    ```
+10. 执行以下命令，完成搭建
+  `$ firewall-cmd --permanent --add-service=ipsec`
+  `$ firewall-cmd --permanent --add-masquerade`
+  `$ firewall-cmd --reload`
+11. 手机建立VPN连接
+  【设置】=> 【VPN】=>【添加VPN配置】=> 类型选择IPsec，描述随便
+
