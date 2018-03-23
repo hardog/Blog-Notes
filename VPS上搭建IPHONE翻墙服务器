@@ -1,3 +1,4 @@
+
 1. 购买VPS, 教程购买的这里[搬瓦工](https://bwh1.net/index.php) （其它也可以）主要需要使用墙外的服务器，防止被禁！
 2. 购买后，在机器上安装Centos 7，获取root权限。
 3. 安装完成后，远程登录机器，命令：`$ ssh -p 端口号 root@vpsIP地址` 例如：`ssh -p 8080 root@127.0.0.1`
@@ -12,4 +13,12 @@
       <description>Secure Shell (SSH) is a protocol for logging into and executing commands on remote machines. It provides secure encrypted communications. If you plan on accessing your machine remotely via SSH over a firewalled interface， enable this option. You need the openssh-server package installed for this option to be useful.</description>
       <port protocol="tcp" port="[ssh端口]"/>
     </service>
+    ```
+  4.5 执行命令`$ firewall-cmd --permanent --add-service=ssh`
+  4.6 重载, `$ firewall-cmd --reload`
+5. 搭建shadowsocks(简称ss)
+  5.1 安装ss, 分别执行命令：`$ yum install m2crypto python-setuptools`，`$ easy_install pip`, `$ pip install shadowsocks`
+  5.2 创建，ss配置文件, 命令：`$ vi  /etc/shadowsocks.json`(路径可选, 内容如下)
+    ```
+    
     ```
