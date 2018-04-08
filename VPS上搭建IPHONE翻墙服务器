@@ -144,3 +144,4 @@ nohup ssserver -c /etc/shadowsocks.json &
 systemctl enable strongswan
 systemctl start strongswan
 
+ssh root@[ip地址] -p [端口]
