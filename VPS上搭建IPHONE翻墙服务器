@@ -138,3 +138,9 @@
       [使用证书]选上述安装过的证书
     完成后，点击连接即可！
 
+12. 重启系统后，执行以下命令启用：
+systemctl start firewalld
+nohup ssserver -c /etc/shadowsocks.json &
+systemctl enable strongswan
+systemctl start strongswan
+
